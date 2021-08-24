@@ -17,10 +17,15 @@ const handleListen = () => console.log(`Listening`);
 const server = http.createServer(app);
 const wss = new WebSocketServer({server});
 
-function handleConnection(socket) {
-	console.log(socket);
-}
-
-wss.on("connection", handleConnection);
+wss.on("connection", (socket) => {
+	console.log("connected to server");
+	socket.on("close", ()=>{
+		console.log("disconnected");
+	});
+	socket.on("message", (message)=>{
+		console.log(message.toString());
+	});
+	socket.send("connected!");
+});
 
 server.listen(3000, handleListen);
