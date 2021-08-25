@@ -22,15 +22,24 @@ const sockets = [];
 wss.on("connection", (socket) => {
 	sockets.push(socket);
 	console.log("connected to server");
+	
 	socket.on("close", ()=>{
 		console.log("disconnected");
 	});
+	
 	socket.on("message", (message)=>{
-		sockets.forEach((aSocket) => {
-			aSocket.send(message.toString());
-		});
+		message = JSON.parse(message);
+		if(message.type == "nickname"){
+			socket.nickname = message.payload;
+			console.log(socket.nickname);
+		}
+		else{
+			var displayMsg = socket.nickname + " : " + message.payload;
+			sockets.forEach((aSocket) => {
+				aSocket.send(displayMsg);
+			});
+		}
 	});
-	socket.send("connected!");
 });
 
 server.listen(3000, handleListen);
