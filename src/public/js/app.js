@@ -1,3 +1,6 @@
+const ul = document.querySelector("ul");
+const messageForm = document.querySelector("form");
+
 const socket = new WebSocket(`wss://${window.location.host}`);
 
 socket.addEventListener("open", ()=>{
@@ -12,6 +15,11 @@ socket.addEventListener("close", ()=>{
 	console.log("closed");
 });
 
-setTimeout(()=>{
-	socket.send("hello from the user");
-}, 3000);
+function handleSubmit(event){
+	event.preventDefault();
+	const input = messageForm.querySelector("input");
+	socket.send(input.value);
+	input.value = "";
+}
+
+messageForm.addEventListener("submit", handleSubmit);
