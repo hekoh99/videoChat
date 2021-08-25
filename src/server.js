@@ -20,24 +20,23 @@ const wss = new WebSocketServer({server});
 const sockets = [];
 
 wss.on("connection", (socket) => {
-	sockets.push(socket);
 	console.log("connected to server");
-	
 	socket.on("close", ()=>{
 		console.log("disconnected");
 	});
 	
 	socket.on("message", (message)=>{
 		message = JSON.parse(message);
-		if(message.type == "nickname"){
-			socket.nickname = message.payload;
-			console.log(socket.nickname);
-		}
-		else{
-			var displayMsg = socket.nickname + " : " + message.payload;
-			sockets.forEach((aSocket) => {
-				aSocket.send(displayMsg);
-			});
+		switch(message.type){
+			case "nickname":
+				socket.nickname = message.payload;
+				sockets.push(socket);
+				break;
+			case "message":
+				sockets.forEach((aSocket) => {
+					aSocket.send(`${socket.nickname} : ${message.payload}`);
+				});
+				break;
 		}
 	});
 });
