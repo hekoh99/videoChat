@@ -17,15 +17,44 @@ const handleListen = () => console.log(`Listening`);
 const server = http.createServer(app);
 const io = SocketIO(server);
 
+function publicRoom(){
+	const {
+		sockets:{
+			adapter:{sids, rooms},
+		},
+	} = io;
+	const publicRooms = [];
+	rooms.forEach((_, key)=>{
+		if(sids.get(key) === undefined){
+			publicRooms.push(key);
+		}
+	});
+	return publicRooms;
+}
+
+function countUser(roomName){
+	if(io.sockets.adapter.rooms.get(roomName) != undefined){
+		return io.sockets.adapter.rooms.get(roomName).size;
+	}
+	else return 0;
+}
+
 io.on("connection", socket => {
+	io.sockets.emit("roomList", publicRoom());
 	socket.on("room", (msg, done)=>{
 		const roomName = msg.payload;
 		socket.join(roomName);
-		done();
+		done(countUser(roomName));
+		socket.to(roomName).emit("roomEnter", countUser(roomName));
+		io.sockets.emit("roomList", publicRoom());
 	});
 	
 	socket.on("disconnecting", ()=>{
-		socket.rooms.forEach((room) => socket.to(room).emit("roomLeft", socket.nickname));
+		socket.rooms.forEach((room) => socket.to(room).emit("roomLeft", socket.nickname, countUser(room)-1));
+	});
+	
+	socket.on("disconnect", ()=>{
+		io.sockets.emit("roomList", publicRoom());
 	});
 	
 	socket.on("chat", (msg, room, done) =>{

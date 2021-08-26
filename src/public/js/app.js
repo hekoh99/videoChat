@@ -1,9 +1,9 @@
 const socket = io();
 
-const welcome = document.getElementById("welcome");
 const room = document.getElementById("chat");
-const roomForm = welcome.querySelector("#room");
-const nickForm = welcome.querySelector("#nickname");
+const roomPage = document.getElementById("rooms");
+const roomForm = roomPage.querySelector("#room");
+const nickForm = document.querySelector("#nickname");
 const chatForm = room.querySelector("form");
 
 let roomName = "";
@@ -20,11 +20,13 @@ function handleRoomSubmit(event){
 	event.preventDefault();
 	const input = roomForm.querySelector("input");
 	roomName = input.value;
-	socket.emit("room", {payload : roomName}, ()=>{
-		welcome.style.display = "none";
+	socket.emit("room", {payload : roomName}, (members)=>{
+		roomPage.style.display = "none";
 		room.style.display = "block";
 		const h3 = room.querySelector("h3");
 		h3.innerText = `Room : ${roomName}`;
+		const numPlace = room.querySelector("#members");
+		numPlace.innerText = `참여 인원 : ${members}`;
 	});
 	input.value = "";
 }
@@ -45,7 +47,7 @@ function handleNickSubmit(event){
 	nick = input.value;
 	socket.emit("nickSet", nick, ()=>{
 		nickForm.style.display = "none";
-		roomForm.style.display = "block";
+		roomPage.style.display = "block";
 		const name = document.createElement("h4");
 		name.innerText = nick;
 		document.querySelector("#name").appendChild(name);
@@ -57,10 +59,27 @@ roomForm.addEventListener("submit", handleRoomSubmit);
 chatForm.addEventListener("submit", handleChatSubmit);
 nickForm.addEventListener("submit", handleNickSubmit);
 
-socket.on("roomLeft", (nickname)=>{
+socket.on("roomLeft", (nickname, members)=>{
+	const numPlace = room.querySelector("#members");
+	numPlace.innerText = `참여 인원 : ${members}`;
 	addMessage(`${nickname}님이 나갔습니다`);
 });
 
 socket.on("chat", (msg, nickname) =>{
 	addMessage(`${nickname} : ${msg}`);
+});
+
+socket.on("roomEnter", (members)=>{
+	const numPlace = room.querySelector("#members");
+	numPlace.innerText = `참여 인원 : ${members}`;
+});
+
+socket.on("roomList", (rooms)=>{
+	const list = document.querySelector("#roomList");
+	list.innerHTML = "";
+	rooms.forEach(room => {
+		const roomBtn = document.createElement("button");
+		roomBtn.innerHTML = room;
+		list.appendChild(roomBtn);
+	});
 });

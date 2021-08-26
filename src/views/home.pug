@@ -11,20 +11,26 @@ html(lang="en")
 			h1 Video Chat
 		main
 			div#name
-			div#welcome
-				form#nickname
+			div#nickname
+				form
 					input(placeholder = "닉네임 설정", required, type="text")
 					button Save
-				
-				form#room(style="display: none")
+			
+			div#rooms(style="display: none")
+				form#room
 					input(placeholder = "방 이름", required, type="text")
 					button Enter Room
 			
 			div#chat(style="display: none")
 				h3 
+				h5#members
 				ul
 				form
 					input(placeholder="메세지를 입력", required, type="text")
 					button Send
+			
+			h4 Open Rooms
+			div#roomList
+			
 		script(src="/socket.io/socket.io.js")
 		script(src="/public/js/app.js")
