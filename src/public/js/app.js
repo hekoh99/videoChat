@@ -1,43 +1,47 @@
-const messageList = document.querySelector("ul");
-const messageForm = document.querySelector("#message");
-const nickForm = document.querySelector("#nickname");
+const socket = io();
 
-const socket = new WebSocket(`wss://${window.location.host}`);
+const welcome = document.getElementById("welcome");
+const room = document.getElementById("room");
+const roomForm = welcome.querySelector("form");
+const chatForm = room.querySelector("form");
 
-function makeMessage(type, payload){
-	const msg = {type, payload};
-	return JSON.stringify(msg);
-}
+let roomName = "";
 
-socket.addEventListener("open", ()=>{
-	console.log("connected to browser");
-});
-
-socket.addEventListener("message", (message)=>{
+function addMessage(msg){
+	const ul = room.querySelector("ul");
 	const li = document.createElement("li");
-	li.innerText = message.data;
-	messageList.append(li);
-});
+	li.innerText = msg;
+	ul.appendChild(li);
+}
 
-socket.addEventListener("close", ()=>{
-	console.log("closed");
-});
-
-function handleSubmit(event){
+function handleRoomSubmit(event){
 	event.preventDefault();
-	const input = messageForm.querySelector("input");
-	socket.send(makeMessage("message", input.value));
+	const input = roomForm.querySelector("input");
+	roomName = input.value;
+	socket.emit("room", {payload : roomName}, ()=>{
+		welcome.style.display = "none";
+		room.style.display = "block";
+		const h3 = room.querySelector("h3");
+		h3.innerText = `Room : ${roomName}`;
+	});
 	input.value = "";
 }
 
-function nickSetting(event){
+function handleChatSubmit(event){
 	event.preventDefault();
-	const input = nickForm.querySelector("input");
-	socket.send(makeMessage("nickname", input.value));
+	const input = chatForm.querySelector("input");
+	const msg = input.value;
+	socket.emit("chat", msg, roomName, () => {
+		addMessage(`나 : ${msg}`);
+	});
 	input.value = "";
-	document.getElementById("nickname").style.display = "none";
-	document.getElementById("message").style.display = "block";
 }
 
-messageForm.addEventListener("submit", handleSubmit);
-nickForm.addEventListener("submit", nickSetting);
+roomForm.addEventListener("submit", handleRoomSubmit);
+chatForm.addEventListener("submit", handleChatSubmit);
+
+socket.on("roomLeft", ()=>{
+	addMessage("someone left");
+});
+
+socket.on("chat", addMessage);

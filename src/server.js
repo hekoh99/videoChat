@@ -1,6 +1,6 @@
 import express from "express";
 import http from "http";
-import WebSocket, { WebSocketServer } from 'ws';
+import SocketIO from "socket.io";
 
 const app = express();
 
@@ -15,29 +15,22 @@ app.get("/*", (req, res)=> res.redirect("/"));
 const handleListen = () => console.log(`Listening`);
 
 const server = http.createServer(app);
-const wss = new WebSocketServer({server});
+const io = SocketIO(server);
 
-const sockets = [];
-
-wss.on("connection", (socket) => {
-	console.log("connected to server");
-	socket.on("close", ()=>{
-		console.log("disconnected");
+io.on("connection", socket => {
+	socket.on("room", (msg, done)=>{
+		const roomName = msg.payload;
+		socket.join(roomName);
+		done();
 	});
 	
-	socket.on("message", (message)=>{
-		message = JSON.parse(message);
-		switch(message.type){
-			case "nickname":
-				socket.nickname = message.payload;
-				sockets.push(socket);
-				break;
-			case "message":
-				sockets.forEach((aSocket) => {
-					aSocket.send(`${socket.nickname} : ${message.payload}`);
-				});
-				break;
-		}
+	socket.on("disconnecting", ()=>{
+		socket.rooms.forEach((room) => socket.to(room).emit("roomLeft"));
+	});
+	
+	socket.on("chat", (msg, room, done) =>{
+		socket.to(room).emit("chat", msg);
+		done();
 	});
 });
 
