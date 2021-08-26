@@ -25,11 +25,16 @@ io.on("connection", socket => {
 	});
 	
 	socket.on("disconnecting", ()=>{
-		socket.rooms.forEach((room) => socket.to(room).emit("roomLeft"));
+		socket.rooms.forEach((room) => socket.to(room).emit("roomLeft", socket.nickname));
 	});
 	
 	socket.on("chat", (msg, room, done) =>{
-		socket.to(room).emit("chat", msg);
+		socket.to(room).emit("chat", msg, socket.nickname);
+		done();
+	});
+	
+	socket.on("nickSet", (nick, done)=>{
+		socket.nickname = nick;
 		done();
 	});
 });
