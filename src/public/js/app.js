@@ -45,6 +45,7 @@ function handleNickSubmit(event){
 	nick = input.value;
 	socket.emit("nickSet", nick, ()=>{
 		nickForm.style.display = "none";
+		roomForm.style.display = "block";
 		const name = document.createElement("h4");
 		name.innerText = nick;
 		document.querySelector("#name").appendChild(name);
