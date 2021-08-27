@@ -5,9 +5,30 @@ const roomPage = document.getElementById("rooms");
 const roomForm = roomPage.querySelector("#room");
 const nickForm = document.querySelector("#nickname");
 const chatForm = room.querySelector("form");
+const myFace = document.getElementById("myFace");
+const muteBtns = document.getElementsByClassName("mute");
+const cameraBtns = document.getElementsByClassName("camera");
 
 let roomName = "";
 let nick = "";
+let myStream;
+
+let isMuted = false;
+let isCamOff = false;
+
+async function getMedia(){
+	try{
+		myStream = await navigator.mediaDevices.getUserMedia({
+			audio:true,
+			video:true,
+		});
+		myFace.srcObject = myStream;
+	} catch(e){
+		console.log(e);
+	}
+}
+
+getMedia();
 
 function addMessage(msg){
 	const ul = room.querySelector("ul");
@@ -55,9 +76,38 @@ function handleNickSubmit(event){
 	input.value = "";
 }
 
+function handleMute(event){
+	event.preventDefault();
+	if(!isMuted){
+		event.path[0].innerText = "음소거 해제";
+		isMuted = true;
+	}else{
+		event.path[0].innerText = "음소거"
+		isMuted = false;
+	}
+}
+
+function handleCamera(event){
+	event.preventDefault();
+	if(!isCamOff){
+		event.path[0].innerText = "카메라 켬";
+		isCamOff = true;
+	}else{
+		event.path[0].innerText = "카메라 끔"
+		isMuted = false;
+	}
+}
+
 roomForm.addEventListener("submit", handleRoomSubmit);
 chatForm.addEventListener("submit", handleChatSubmit);
 nickForm.addEventListener("submit", handleNickSubmit);
+
+for (let btn of muteBtns) {
+    btn.addEventListener("click", handleMute);
+}
+for (let btn of cameraBtns) {
+    btn.addEventListener("click", handleCamera);
+}
 
 socket.on("roomLeft", (nickname, members)=>{
 	const numPlace = room.querySelector("#members");
