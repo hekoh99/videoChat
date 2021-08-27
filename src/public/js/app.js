@@ -8,6 +8,7 @@ const chatForm = room.querySelector("form");
 const myFace = document.getElementById("myFace");
 const muteBtns = document.getElementsByClassName("mute");
 const cameraBtns = document.getElementsByClassName("camera");
+const myCams = document.getElementById("myCams");
 
 let roomName = "";
 let nick = "";
@@ -16,6 +17,23 @@ let myStream;
 let isMuted = false;
 let isCamOff = false;
 
+async function getCams(){
+	try{
+		const devices = await navigator.mediaDevices.enumerateDevices();
+		const cams = devices.filter(
+			(device) => device.kind == "videoinput"
+		);
+		cams.forEach(cam =>{
+			const option = document.createElement("option");
+			option.value = cam.deviceId;
+			option.innerText = cam.label;
+			myCams.appendChild(option);
+		});
+	}catch(e){
+		console.log(e);
+	}
+}
+
 async function getMedia(){
 	try{
 		myStream = await navigator.mediaDevices.getUserMedia({
@@ -23,6 +41,7 @@ async function getMedia(){
 			video:true,
 		});
 		myFace.srcObject = myStream;
+		await getCams();
 	} catch(e){
 		console.log(e);
 	}
@@ -78,6 +97,10 @@ function handleNickSubmit(event){
 
 function handleMute(event){
 	event.preventDefault();
+	myStream.getAudioTracks().forEach((track)=>{
+		track.enabled = !track.enabled
+	});
+	
 	if(!isMuted){
 		event.path[0].innerText = "음소거 해제";
 		isMuted = true;
@@ -89,6 +112,7 @@ function handleMute(event){
 
 function handleCamera(event){
 	event.preventDefault();
+	myStream.getVideoTracks().forEach((track)=>{track.enabled = !track.enabled});
 	if(!isCamOff){
 		event.path[0].innerText = "카메라 켬";
 		isCamOff = true;
