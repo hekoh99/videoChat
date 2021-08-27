@@ -8,7 +8,7 @@ const chatForm = room.querySelector("form");
 const myFace = document.getElementById("myFace");
 const muteBtns = document.getElementsByClassName("mute");
 const cameraBtns = document.getElementsByClassName("camera");
-const myCams = document.getElementById("myCams");
+const camdirBtn = document.getElementById("camDir");
 
 let roomName = "";
 let nick = "";
@@ -16,34 +16,18 @@ let myStream;
 
 let isMuted = false;
 let isCamOff = false;
-
-async function getCams(){
-	try{
-		const devices = await navigator.mediaDevices.enumerateDevices();
-		const cams = devices.filter(
-			(device) => device.kind == "videoinput"
-		);
-		cams.forEach(cam =>{
-			const option = document.createElement("option");
-			option.value = cam.deviceId;
-			option.innerText = cam.label;
-			myCams.appendChild(option);
-		});
-	}catch(e){
-		console.log(e);
-	}
-}
+let camFront = true;
 
 async function getMedia(){
+	const videoConst = { facingMode: { exact : (camFront ? "user" : "environment")} };
 	try{
 		myStream = await navigator.mediaDevices.getUserMedia({
-			audio:true,
-			video:true,
+			audio: true,
+			video: videoConst,
 		});
 		myFace.srcObject = myStream;
-		await getCams();
 	} catch(e){
-		console.log(e);
+		alert(e);
 	}
 }
 
@@ -118,8 +102,16 @@ function handleCamera(event){
 		isCamOff = true;
 	}else{
 		event.path[0].innerText = "카메라 끔"
-		isMuted = false;
+		isCamOff = false;
 	}
+}
+
+async function handleCamChange(event){
+	event.preventDefault();
+	camFront = !camFront;
+	getMedia();
+	if(camFront) event.path[0].innerText = "후면 캠";
+	else event.path[0].innerText = "전면 캠";
 }
 
 roomForm.addEventListener("submit", handleRoomSubmit);
@@ -132,6 +124,8 @@ for (let btn of muteBtns) {
 for (let btn of cameraBtns) {
     btn.addEventListener("click", handleCamera);
 }
+
+camdirBtn.addEventListener("click", handleCamChange);
 
 socket.on("roomLeft", (nickname, members)=>{
 	const numPlace = room.querySelector("#members");
