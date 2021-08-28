@@ -19,13 +19,20 @@ let isCamOff = false;
 let camFront = true;
 
 async function getMedia(){
-	const videoConst = { facingMode: { exact : (camFront ? "user" : "environment")} };
+	const videoConst = { facingMode: (camFront ? "user" : "environment") };
 	try{
 		myStream = await navigator.mediaDevices.getUserMedia({
 			audio: true,
 			video: videoConst,
 		});
 		myFace.srcObject = myStream;
+		myStream.getAudioTracks().forEach((track)=>{
+		if(track.enabled){
+			document.getElementById("myAud").innerText = "음소거";
+		}else{
+			document.getElementById("myAud").innerText = "음소거 해제"
+		}
+	});
 	} catch(e){
 		alert(e);
 	}
@@ -83,15 +90,12 @@ function handleMute(event){
 	event.preventDefault();
 	myStream.getAudioTracks().forEach((track)=>{
 		track.enabled = !track.enabled
+		if(track.enabled){
+			event.path[0].innerText = "음소거";
+		}else{
+			event.path[0].innerText = "음소거 해제"
+		}
 	});
-	
-	if(!isMuted){
-		event.path[0].innerText = "음소거 해제";
-		isMuted = true;
-	}else{
-		event.path[0].innerText = "음소거"
-		isMuted = false;
-	}
 }
 
 function handleCamera(event){
