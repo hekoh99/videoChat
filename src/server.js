@@ -27,4 +27,11 @@ instrument(io, {
   auth: false
 });
 
+io.on("connection", socket =>{
+	socket.on("joinRoom", (roomName, done) =>{
+		socket.join(roomName);
+		done();
+	})
+});
+
 server.listen(3000, handleListen);

@@ -10,12 +10,18 @@ html(lang="en")
 		header
 			h1 Video Chat
 		main
+			h3#roomName
+			div#roomInfo
+				form
+					input(placeholder="방 이름", required, type="text")
+					button 입장
+					
 			div#Stream
 				div#myStream
 					video#myFace(autoplay, playsinline, height="30%", width="30%")
-					button#myAud.mute 음소거
-					button#myCam.camera 카메라 끔
-					button#camDir 후면 캠
+				button#myAud.mute 음소거
+				button#myCam.camera 카메라 끔
+				button#camDir 후면 캠
 			
 		script(src="/socket.io/socket.io.js")
 		script(src="/public/js/app.js")

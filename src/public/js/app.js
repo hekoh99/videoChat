@@ -1,7 +1,15 @@
+const socket = io();
+
 const myFace = document.getElementById("myFace");
 const muteBtns = document.getElementsByClassName("mute");
 const cameraBtns = document.getElementsByClassName("camera");
 const camdirBtn = document.getElementById("camDir");
+
+const roomInfo = document.getElementById("roomInfo");
+const roomForm = roomInfo.querySelector("form");
+const stream = document.getElementById("Stream");
+ 
+stream.hidden = true;
 
 let myStream;
 
@@ -37,8 +45,6 @@ async function getMedia(){
 	}
 }
 
-getMedia();
-
 function handleMute(event){
 	event.preventDefault();
 	myStream.getAudioTracks().forEach((track)=>{
@@ -72,11 +78,26 @@ async function handleCamChange(event){
 	else event.path[0].innerText = "전면 캠";
 }
 
+function handleRoomSubmit(event){
+	event.preventDefault();
+	const input = roomForm.querySelector("input");
+	const roomName = input.value;
+	socket.emit("joinRoom", roomName, ()=>{
+		roomInfo.hidden = true;
+  		stream.hidden = false;
+  		const name = document.querySelector("#roomName");
+  		name.innerText = `Room ${roomName}`;
+		getMedia();
+	});
+	input.value = "";
+}
+
 for (let btn of muteBtns) {
     btn.addEventListener("click", handleMute);
 }
 for (let btn of cameraBtns) {
     btn.addEventListener("click", handleCamera);
 }
-
 camdirBtn.addEventListener("click", handleCamChange);
+
+roomForm.addEventListener("submit", handleRoomSubmit);
