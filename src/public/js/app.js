@@ -82,11 +82,13 @@ function handleRoomSubmit(event){
 	event.preventDefault();
 	const input = roomForm.querySelector("input");
 	const roomName = input.value;
-	socket.emit("joinRoom", roomName, ()=>{
+	socket.emit("joinRoom", roomName, (members)=>{
 		roomInfo.hidden = true;
   		stream.hidden = false;
   		const name = document.querySelector("#roomName");
   		name.innerText = `Room ${roomName}`;
+		const numPlace = document.querySelector("#members");
+		numPlace.innerText = `참여 인원 : ${members}`;
 		getMedia();
 	});
 	input.value = "";
@@ -101,3 +103,13 @@ for (let btn of cameraBtns) {
 camdirBtn.addEventListener("click", handleCamChange);
 
 roomForm.addEventListener("submit", handleRoomSubmit);
+
+socket.on("roomEnter", (members)=>{
+	const numPlace = document.querySelector("#members");
+	numPlace.innerText = `참여 인원 : ${members}`;
+});
+
+socket.on("roomLeft", (members)=>{
+	const numPlace = document.querySelector("#members");
+	numPlace.innerText = `참여 인원 : ${members}`;
+});

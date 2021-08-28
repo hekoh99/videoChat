@@ -27,11 +27,39 @@ instrument(io, {
   auth: false
 });
 
+function publicRoom(){ // roomList 만들 때 사용
+	const {
+		sockets:{
+			adapter:{sids, rooms},
+		},
+	} = io;
+	const publicRooms = [];
+	rooms.forEach((_, key)=>{
+		if(sids.get(key) === undefined){
+			publicRooms.push(key);
+		}
+	});
+	return publicRooms;
+}
+
+function countUser(roomName){
+	if(io.sockets.adapter.rooms.get(roomName) != undefined){
+		return io.sockets.adapter.rooms.get(roomName).size;
+	}
+	else return 0;
+}
+
+
 io.on("connection", socket =>{
 	socket.on("joinRoom", (roomName, done) =>{
 		socket.join(roomName);
-		done();
-	})
+		done(countUser(roomName));
+		socket.to(roomName).emit("roomEnter", countUser(roomName));
+	});
+	
+	socket.on("disconnecting", ()=>{
+		socket.rooms.forEach((room) => socket.to(room).emit("roomLeft", countUser(room)-1));
+	});
 });
 
 server.listen(3000, handleListen);
