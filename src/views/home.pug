@@ -10,34 +10,12 @@ html(lang="en")
 		header
 			h1 Video Chat
 		main
-			div#name
-			div#nickname
-				form
-					input(placeholder = "닉네임 설정", required, type="text")
-					button Save
-			
-			div#rooms(style="display: none")
-				form#room
-					input(placeholder = "방 이름", required, type="text")
-					button Enter Room
-			
 			div#Stream
 				div#myStream
 					video#myFace(autoplay, playsinline, height="30%", width="30%")
 					button#myAud.mute 음소거
 					button#myCam.camera 카메라 끔
 					button#camDir 후면 캠
-				
-			div#chat(style="display: none")
-				h3 
-				h5#members
-				ul
-				form
-					input(placeholder="메세지를 입력", required, type="text")
-					button Send
-			
-			h4 Open Rooms
-			div#roomList
 			
 		script(src="/socket.io/socket.io.js")
 		script(src="/public/js/app.js")
