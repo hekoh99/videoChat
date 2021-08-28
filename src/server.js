@@ -54,11 +54,15 @@ io.on("connection", socket =>{
 	socket.on("joinRoom", (roomName, done) =>{
 		socket.join(roomName);
 		done(countUser(roomName), roomName);
-		socket.to(roomName).emit("roomEnter", countUser(roomName));
+		socket.to(roomName).emit("roomEnter", roomName, countUser(roomName));
 	});
 	
 	socket.on("disconnecting", ()=>{
 		socket.rooms.forEach((room) => socket.to(room).emit("roomLeft", countUser(room)-1));
+	});
+	
+	socket.on("offer", (offer, roomName)=>{
+		socket.to(roomName).emit("offer", offer);
 	});
 });
 

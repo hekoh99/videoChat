@@ -16,6 +16,7 @@ let myStream;
 let isMuted = false;
 let isCamOff = false;
 let camFront = true;
+let myPeerConnection;
 
 async function getMedia(){
 	const videoConst = { facingMode: (camFront ? "user" : "environment") };
@@ -53,6 +54,7 @@ async function joinRoomDone(members, roomName){
 	const numPlace = document.querySelector("#members");
 	numPlace.innerText = `참여 인원 : ${members}`;
 	await getMedia();
+	makeConnection();
 }
 
 function handleMute(event){
@@ -98,6 +100,8 @@ function handleRoomSubmit(event){
 	input.value = "";
 }
 
+// event listener
+
 for (let btn of muteBtns) {
     btn.addEventListener("click", handleMute);
 }
@@ -108,12 +112,27 @@ camdirBtn.addEventListener("click", handleCamChange);
 
 roomForm.addEventListener("submit", handleRoomSubmit);
 
-socket.on("roomEnter", (members)=>{
+// socket code
+
+socket.on("roomEnter", async (roomName, members)=>{  // peer A
 	const numPlace = document.querySelector("#members");
 	numPlace.innerText = `참여 인원 : ${members}`;
+	const offer = await myPeerConnection.createOffer();
+	myPeerConnection.setLocalDescription(offer);
+	socket.emit("offer", offer, roomName);
 });
 
 socket.on("roomLeft", (members)=>{
 	const numPlace = document.querySelector("#members");
 	numPlace.innerText = `참여 인원 : ${members}`;
 });
+
+socket.on("offer", (offer)=>{   // peer B
+	console.log(offer);
+});
+
+// RTC code
+function makeConnection(){
+	myPeerConnection = new RTCPeerConnection();
+	myStream.getTracks().forEach(track => myPeerConnection.addTrack(track, myStream));
+}
