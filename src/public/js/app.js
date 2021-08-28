@@ -7,9 +7,9 @@ const camdirBtn = document.getElementById("camDir");
 
 const roomInfo = document.getElementById("roomInfo");
 const roomForm = roomInfo.querySelector("form");
-const stream = document.getElementById("Stream");
+const chat = document.getElementById("chat");
  
-stream.hidden = true;
+chat.hidden = true;
 
 let myStream;
 
@@ -48,7 +48,7 @@ async function getMedia(){
 
 async function joinRoomDone(members, roomName){
 	roomInfo.hidden = true;
-  	stream.hidden = false;
+  	chat.hidden = false;
 	const name = document.querySelector("#roomName");
   	name.innerText = `Room ${roomName}`;
 	const numPlace = document.querySelector("#members");
