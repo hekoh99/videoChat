@@ -53,8 +53,6 @@ async function joinRoomDone(members, roomName){
   	name.innerText = `Room ${roomName}`;
 	const numPlace = document.querySelector("#members");
 	numPlace.innerText = `참여 인원 : ${members}`;
-	await getMedia();
-	makeConnection();
 }
 
 function handleMute(event){
@@ -90,10 +88,12 @@ async function handleCamChange(event){
 	else event.path[0].innerText = "전면 캠";
 }
 
-function handleRoomSubmit(event){
+async function handleRoomSubmit(event){
 	event.preventDefault();
 	const input = roomForm.querySelector("input");
 	const roomName = input.value;
+	await getMedia();
+	makeConnection();
 	socket.emit("joinRoom", roomName, (members, roomName)=>{
 		joinRoomDone(members, roomName);
 	});
@@ -127,11 +127,19 @@ socket.on("roomLeft", (members)=>{
 	numPlace.innerText = `참여 인원 : ${members}`;
 });
 
-socket.on("offer", (offer)=>{   // peer B
-	console.log(offer);
+socket.on("offer", async (offer, roomName)=>{   // peer B receive offer
+	myPeerConnection.setRemoteDescription(offer);
+	const answer = await myPeerConnection.createAnswer();
+	myPeerConnection.setLocalDescription(answer);
+	socket.emit("answer", answer, roomName);
+});
+
+socket.on("answer", answer =>{  // peer A receive ans
+	myPeerConnection.setRemoteDescription(answer);	
 });
 
 // RTC code
+
 function makeConnection(){
 	myPeerConnection = new RTCPeerConnection();
 	myStream.getTracks().forEach(track => myPeerConnection.addTrack(track, myStream));

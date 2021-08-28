@@ -62,8 +62,12 @@ io.on("connection", socket =>{
 	});
 	
 	socket.on("offer", (offer, roomName)=>{
-		socket.to(roomName).emit("offer", offer);
+		socket.to(roomName).emit("offer", offer, roomName);
 	});
+	
+	socket.on("answer", (ans, roomName)=>{
+		socket.to(roomName).emit("answer", ans);
+	})
 });
 
 server.listen(3000, handleListen);
