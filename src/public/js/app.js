@@ -45,6 +45,16 @@ async function getMedia(){
 	}
 }
 
+async function joinRoomDone(members, roomName){
+	roomInfo.hidden = true;
+  	stream.hidden = false;
+	const name = document.querySelector("#roomName");
+  	name.innerText = `Room ${roomName}`;
+	const numPlace = document.querySelector("#members");
+	numPlace.innerText = `참여 인원 : ${members}`;
+	await getMedia();
+}
+
 function handleMute(event){
 	event.preventDefault();
 	myStream.getAudioTracks().forEach((track)=>{
@@ -73,7 +83,7 @@ function handleCamera(event){
 async function handleCamChange(event){
 	event.preventDefault();
 	camFront = !camFront;
-	getMedia();
+	await getMedia();
 	if(camFront) event.path[0].innerText = "후면 캠";
 	else event.path[0].innerText = "전면 캠";
 }
@@ -82,14 +92,8 @@ function handleRoomSubmit(event){
 	event.preventDefault();
 	const input = roomForm.querySelector("input");
 	const roomName = input.value;
-	socket.emit("joinRoom", roomName, (members)=>{
-		roomInfo.hidden = true;
-  		stream.hidden = false;
-  		const name = document.querySelector("#roomName");
-  		name.innerText = `Room ${roomName}`;
-		const numPlace = document.querySelector("#members");
-		numPlace.innerText = `참여 인원 : ${members}`;
-		getMedia();
+	socket.emit("joinRoom", roomName, (members, roomName)=>{
+		joinRoomDone(members, roomName);
 	});
 	input.value = "";
 }

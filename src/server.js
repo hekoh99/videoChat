@@ -53,7 +53,7 @@ function countUser(roomName){
 io.on("connection", socket =>{
 	socket.on("joinRoom", (roomName, done) =>{
 		socket.join(roomName);
-		done(countUser(roomName));
+		done(countUser(roomName), roomName);
 		socket.to(roomName).emit("roomEnter", countUser(roomName));
 	});
 	
