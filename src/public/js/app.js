@@ -5,6 +5,8 @@ const muteBtns = document.getElementsByClassName("mute");
 const cameraBtns = document.getElementsByClassName("camera");
 const camdirBtn = document.getElementById("camDir");
 
+const peerStream = document.getElementById("peerStream");
+
 const roomInfo = document.getElementById("roomInfo");
 const roomForm = roomInfo.querySelector("form");
 const chat = document.getElementById("chat");
@@ -51,6 +53,7 @@ async function joinRoomDone(members, roomName){
   	chat.hidden = false;
 	const name = document.querySelector("#roomName");
   	name.innerText = `Room ${roomName}`;
+	name.setAttribute("name", roomName);
 	const numPlace = document.querySelector("#members");
 	numPlace.innerText = `참여 인원 : ${members}`;
 }
@@ -100,6 +103,23 @@ async function handleRoomSubmit(event){
 	input.value = "";
 }
 
+function handleIce(data){
+	const room = document.querySelector("#roomName");
+	const name = room.getAttribute("name");
+	socket.emit("ice", data.candidate, name);
+}
+
+function handleAddStream(data){
+	const stream = data.stream;
+	const peerFace = document.createElement("video");
+	peerFace.setAttribute("id", stream.id);
+	peerFace.setAttribute("width", "30%");
+	peerFace.setAttribute("height", "30%");
+	peerFace.autoplay = true;
+	peerFace.srcObject = stream;
+	peerStream.appendChild(peerFace);
+}
+
 // event listener
 
 for (let btn of muteBtns) {
@@ -138,9 +158,15 @@ socket.on("answer", answer =>{  // peer A receive ans
 	myPeerConnection.setRemoteDescription(answer);	
 });
 
+socket.on("ice", ice => {
+	myPeerConnection.addIceCandidate(ice);
+});
+
 // RTC code
 
 function makeConnection(){
 	myPeerConnection = new RTCPeerConnection();
+	myPeerConnection.addEventListener("icecandidate", handleIce);
+	myPeerConnection.addEventListener("addstream", handleAddStream);
 	myStream.getTracks().forEach(track => myPeerConnection.addTrack(track, myStream));
 }
